@@ -28,9 +28,15 @@
 - `f_gen.m`: a function that generates the coefficient matrix $f$ for the calculation of social welfare.
   - Inputs: time $t$, the index of the current belief $\pi_t$, and global vars `x_vals, pi2_vals`. If $t=1$, it requires the pre-calculated value functions `V1, V2`.
   - Output: a vector $f$. $f^T \cdot \hat{\phi}^C_t[\pi_t]$ is the expected social welfare.
+- `expected_sw.m`: a function that generates that evaluates the expected social welfare (to go) of a given device.
+  - Inputs: device $\hat{\phi}^C_t$, global vars `x_vals, pi2_vals`. The precalculated value functions from last stage `V1,V2`.
+  - Output: a social welfare vector. Each row corresponds to an initial belief.
+  
 - `main_linprog.m`: a main file for the experiment. Use linear programming solver to find a correlation device.
 - `main_social.m`: a main file for the experiment. Use linear programming solver to find a correlation device, whose objective function is set to be the expected social welfare to go.
 - `main_quadprog.m`: a main file for the experiment. Use quadratic programming solver to find a correlation device.
+- `main_team.m`: a main file for the experiment. Use linear programming to solve the team problem.
+- `main_test.m`: for test purpose. May be deleted in later versions.
 
 ## Experiment Settings
 

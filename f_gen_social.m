@@ -14,6 +14,7 @@ function f = f_gen_social(t, pi_ind, x_vals, pi2_vals, V1, V2)
 % Outputs:
 % f matrix: 16 by 1.
 %
+
     pi_value = pi2_vals(pi_ind, :);
     pi_value_switched = [pi_value(2), pi_value(1)];
     pi_ind_switch = find(ismember(pi2_vals, pi_value_switched, 'row'));

@@ -18,7 +18,9 @@ for pi2_ind = 1 : size(pi2_vals, 1)
     Aeq_t2 = ones(1, 16);
     beq_t2 = 1;
     lb_t2 = zeros(16, 1); ub_t2 = ones(16, 1);
-    f = f_gen(2, pi2_ind, x_vals, pi2_vals);
+    % f = f_gen_social(2, pi2_ind, x_vals, pi2_vals);
+    f = zeros(16, 1);
+    f(11) = 1;
     sol = linprog(-f, -A_t2, -b_t2, Aeq_t2, beq_t2, lb_t2, ub_t2, options);
     assert(all(A_t2 * sol >= -1e-8));
     phi2(pi2_ind, :) = sol';
@@ -42,7 +44,7 @@ for pi1_ind = 1 : length(q_vals)
     Aeq_t1 = ones(1, 16);
     beq_t1 = 1;
     lb_t1 = zeros(16, 1); ub_t1 = ones(16, 1);
-    f = f_gen_social(2, pi2_ind, x_vals, pi2_vals, V12, V22);
+    f = f_gen_social(1, pi2_ind, x_vals, pi2_vals, V12, V22);
     sol = linprog(-f, -A_t1, -b_t1, Aeq_t1, beq_t1, lb_t1, ub_t1, options);
     if isempty(sol)
         failed = [failed, pi1_ind];
