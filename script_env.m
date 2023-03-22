@@ -1,6 +1,5 @@
 %% Set Parameters Here
-% q_vals = 0.01 : 0.01 : 0.95;
-q_vals = 0.2;
+q_vals = 0.1 : 0.05 : 0.95;
 x_vals = [0.2, 1.2];
 
 %%
