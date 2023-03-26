@@ -54,14 +54,16 @@ class PublicInvestProblem:
 
         # Vectors / Matrices for storing the results.
         # self.phi[t] is the device at time t. Format: self.phi[t][pi0_ind, pi1_ind, gamma0L_ind, gamma0H_ind, gamma1L_ind, gamma1H_ind].
-        self.phi = [np.zeros((len(self.pi_vals[t]), len(self.pi_vals[t]), self.num_quant, self.num_quant, \
-                              self.num_quant, self.num_quant)) for t in range(self.T)]
+        self.phi = [np.full((len(self.pi_vals[t]), len(self.pi_vals[t]), self.num_quant, self.num_quant, \
+                              self.num_quant, self.num_quant), np.nan) for t in range(self.T)]
         # self.V[t] is the value to go function. Format: self.V[t][i, pi0_ind, pi1_ind, xi] (note that t can be T.)
-        self.V = [np.zeros((2, len(self.pi_vals[t]), len(self.pi_vals[t]), 2)) for t in range(T + 1)]
+        self.V = [np.full((2, len(self.pi_vals[t]), len(self.pi_vals[t]), 2), np.nan) for t in range(self.T + 1)]
+        self.V[self.T] = np.zeros((2, len(self.pi_vals[self.T]), len(self.pi_vals[self.T]), 2))
         # self.social_welfare is the social welfare to go. 
         # Format: self.social_welfare[t][pi0_ind, pi1_ind].
         # Exception: index 0: 1-d: each pi_ind represents pi0_ind = pi1_ind = pi_ind.
-        self.social_welfare = [np.zeros((len(self.pi_vals[t]), len(self.pi_vals[t]))) for t in range(T + 1)]
+        self.social_welfare = [np.full((len(self.pi_vals[t]), len(self.pi_vals[t])), np.nan) for t in range(self.T + 1)]
+        self.social_welfare[self.T] = np.zeros((len(self.pi_vals[self.T]), len(self.pi_vals[self.T])))
 
         self.__complete = False # A var that indicates if the solver has been run or not.
         self.__team = False # A var that indicates if the solver has been run under team mode or not.
@@ -713,10 +715,22 @@ class PublicInvestProblem:
 
 
         ind = np.indices((len(self.pi_vals[t]), len(self.pi_vals[t])))
-        temp_ftn = lambda x: is_indep(self.phi[t][x[0], x[1], :, :, :, :].reshape(self.num_quant ** 2, self.num_quant ** 2))
-        self.sPBE_flag[t] = np.apply_along_axis(temp_ftn, axis=0, arr=ind)
+        temp_ind_ftn = lambda x: is_indep(self.phi[t][x[0], x[1], :, :, :, :].reshape(self.num_quant ** 2, self.num_quant ** 2))
+        temp_det_ftn = lambda x: is_deterministic(self.phi[t][x[0], x[1], :, :, :, :])
 
-        if t < self.T - 1:
+        # Condition for realizability of sPCE by an sPBE
+        # if t == self.T - 1:
+        #     self.sPBE_flag[t] = np.apply_along_axis(temp_ind_ftn, axis=0, arr=ind)
+        # else: # if t < self.T - 1
+        #     self.sPBE_flag[t] = np.apply_along_axis(temp_det_ftn, axis=0, arr=ind)
+        #     self.sPBE_flag[t] = np.logical_and(self.sPBE_flag[t], \
+        #                                         np.apply_along_axis(is_next_sPBE, axis=0, arr=ind))
+            
+        # Condition for equivalence of sPCE and sPBE
+        if t == self.T - 1:
+            self.sPBE_flag[t] = np.apply_along_axis(temp_det_ftn, axis=0, arr=ind)
+        else: # if t < self.T - 1
+            self.sPBE_flag[t] = np.apply_along_axis(temp_det_ftn, axis=0, arr=ind)
             self.sPBE_flag[t] = np.logical_and(self.sPBE_flag[t], \
                                                 np.apply_along_axis(is_next_sPBE, axis=0, arr=ind))
             
@@ -751,6 +765,13 @@ class PublicInvestProblem:
         else:
             social_game, social_team = self.social_welfare[0].flatten(), self.social_welfare_comp[0].flatten()
             sPBE_markers = self.sPBE_flag[0]
+
+
+        plt.rc('font', size=10)
+        plt.rc('axes', titlesize=14)
+        plt.rc('axes', labelsize=14)
+        plt.rc('legend', fontsize=11)
+
         plt.plot(self.q_vals, social_game, label = "Social welfare: sPCE")
         plt.plot(self.q_vals, social_team, label = "Social welfare: team")
         # plt.scatter(self.q_vals[sPBE_markers], social_game[sPBE_markers],\
@@ -764,10 +785,10 @@ class PublicInvestProblem:
         # plt.fill_between(self.q_vals, social_game, np.zeros(social_game.shape), where=np.logical_not(sPBE_markers),\
         #                  color='red', alpha=0.3, label="sPCE")
         plt.fill_between(self.q_vals, social_game, np.zeros(social_game.shape), where=sPBE_markers, \
-                         color='red', alpha=0.3, label="sPBE")
+                         color='red', alpha=0.6, label="sPBE")
         
 
-        plt.xlabel("Initial q values")
+        plt.xlabel(r"Initial $q$ values")
         plt.ylabel("Social welfare")
         plt.legend()
         if filename:
@@ -775,7 +796,11 @@ class PublicInvestProblem:
         plt.show()
 
         return
-
+    
+    # For test purpose only.
+    # def reset_sPBE_flag(self):
+    #     self.__checked_sPBE = [False] * self.T
+    #     return
 
 
 def is_indep(joint_dist, tolerant=1e-8):
@@ -799,6 +824,24 @@ def is_indep(joint_dist, tolerant=1e-8):
     if (np.abs(joint_dist - x_margin * y_margin) < tolerant).all(): return True
     return False
 
+def is_deterministic(dist, tolerant=1e-8):
+    """Check if a probability distribution is of a deterministic random variable.
+
+    Args:
+    ---
+    :joint_dist: a distribution. A matrix or an array.
+
+    :tolerant: Tolerant. 1e-8 by default.
+
+    Returns:
+    ---
+    :res: True if deterministic; False if not. 
+    """
+    if np.isnan(dist).any(): return False
+
+    if np.logical_or(np.abs(dist) < tolerant, np.abs(dist - 1) < tolerant).all(): return True
+    return False
+
 
 
 if __name__ == "__main__":
@@ -806,6 +849,8 @@ if __name__ == "__main__":
     # env.compare()
     # env.save("0322")
     env = PublicInvestProblem(filename="0322")
-    env.detailed_plot("0322.pdf")
+    # env.reset_sPBE_flag()
+    env.is_sPBE()
+    env.detailed_plot("0323.pdf")
 
     print()

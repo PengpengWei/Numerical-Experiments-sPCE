@@ -9,7 +9,7 @@ options = optimoptions('linprog','Display','none');
 
 %% Stage 2
 
-rng(12); % Fix the random seed for reproducibility.
+rng(122); % Fix the random seed for reproducibility.
 
 phi2 = NaN(size(pi2_vals, 1), 16);
 for pi2_ind = 1 : size(pi2_vals, 1)
