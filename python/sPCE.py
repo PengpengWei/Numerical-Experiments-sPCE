@@ -785,7 +785,7 @@ class PublicInvestProblem:
         # plt.fill_between(self.q_vals, social_game, np.zeros(social_game.shape), where=np.logical_not(sPBE_markers),\
         #                  color='red', alpha=0.3, label="sPCE")
         plt.fill_between(self.q_vals, social_game, np.zeros(social_game.shape), where=sPBE_markers, \
-                         color='red', alpha=0.6, label="sPBE")
+                         color='red', alpha=0.6, label="sPBE/sPCE")
         
 
         plt.xlabel(r"Initial $q$ values")
