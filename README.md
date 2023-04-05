@@ -10,10 +10,14 @@
 - At each time $t$, if player $i$ contributes, she receives $1-v(x^i)$ dollars. If player $i$ does not contributes, she receives $1$ dollar if the other player contributes, and receives $0$ dollar if the other player does not contribute. 
   - $a^i_t \in \{1, 2\}$, where 1 represents "not contribute", and "2" represents "contribute".
 
-## Functions
+## Python Code
+
+The reader may refer to the `sPCE.py` directly. The class `PublicInvestProblem` includes the detailed comments for each module. `test.ipynb` presents some sample codes.  
+
+## MATLAB Functions
 
 - `script_env.m`: a script for initialization. It creates all the required global parameters.
-  - `x_vals`: [$v(1)$, $v(2)$]
+  - `x_vals`: $[v(1), v(2)]$
   - `pi2_vals`: all the possible values of $\pi_2$. Note that $\pi_1$'s values are also included.
 - `V2i_gen.m`: a function that generates $V^1_2, V^2_2$, given the global vars `x_vals, pi2_vals`, and a given $\hat{\phi}^C_2$. 
   - The output consists of two matrices. Each matrix is indexed by the state $x^i$ and the index of $\pi_2$ in `pi2_vals`. 
